@@ -1,3 +1,5 @@
+# Lucas Bubner, 2023
+
 class Minesweeper:
     def __init__(self):
         ...

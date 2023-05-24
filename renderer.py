@@ -1,3 +1,5 @@
+# Lucas Bubner, 2023
+
 import pygame
 import sys
 
