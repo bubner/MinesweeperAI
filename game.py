@@ -22,11 +22,11 @@ class Minesweeper:
         self.height = height
         self.minecount = mines
         # Store location of all flags
-        self.flags = []
+        self.flags = set()
         # Store location of all mines, randomly assign them to places
-        self.mines = []
+        self.mines = set()
         # Store location of all revealed cells
-        self.revealed = []
+        self.revealed = set()
         # Set initial game state to playing
         self.gamestate = Gamestates.PLAYING
         # Generate mines
@@ -44,16 +44,16 @@ class Minesweeper:
             if square in self.mines:
                 continue
             # Otherwise, add it to the mines array and increment successful mines
-            self.mines.append(square)
+            self.mines.add(square)
             mines_generated += 1
 
     def reset(self):
         """
         Reset all variables to default values in the constructor
         """
-        self.flags = []
-        self.mines = []
-        self.revealed = []
+        self.flags = set()
+        self.mines = set()
+        self.revealed = set()
         self.gamestate = Gamestates.PLAYING
         self.generate_mines()
 
@@ -66,14 +66,14 @@ class Minesweeper:
             return
         
         # Add the square to the revealed array
-        self.revealed.append(square)
+        self.revealed.add(square)
 
         # If it is the first move, reveal a starting radius of squares around the square
         if len(self.revealed) == 1:
             # Explore neighbours that are not mines
             for neighbour in self.get_neighbours(square):
                 if neighbour not in self.mines:
-                    self.revealed.append(neighbour)
+                    self.revealed.add(neighbour)
                 
                 
         # Check if the revealed square is in the mines locations, if so, then the game is lost
@@ -94,7 +94,7 @@ class Minesweeper:
             self.flags.remove(square)
         elif square not in self.revealed:
             # Otherwise, add it. This will make sure we have a toggle function
-            self.flags.append(square)
+            self.flags.add(square)
 
         # Check if the game is won by checking if the number of correct flags is equal to the number of mines
         if self.mines == self.flags:

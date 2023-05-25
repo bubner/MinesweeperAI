@@ -130,14 +130,14 @@ def main():
         text = heading.render(text, True, WHITE)
         textRect = text.get_rect()
         # Calculate the center of the screen, then offset it to get the center of the right side of the screen
-        textRect.center = (int((5 / 6) * width), int((2 / 3) * height))
+        textRect.center = (int((5 / 6) * width), int((5 / 6) * height))
         screen.blit(text, textRect)
 
         # Render number of flags that should be placed
         text = "Flags: {}".format(game.minecount - len(game.flags))
         text = font.render(text, True, WHITE)
         textRect = text.get_rect()
-        textRect.center = (int((5 / 6) * width), int((1 / 3) * height))
+        textRect.center = (int((5 / 6) * width), int((2 / 3) * height))
         screen.blit(text, textRect)
 
         # Render a header text to the screen
