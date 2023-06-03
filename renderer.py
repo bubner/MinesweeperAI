@@ -178,7 +178,8 @@ def main():
                                 if cells[i][j].collidepoint(mouse_position):
                                     game.make_move((i, j))
                                     # Update AI knowledge base
-                                    ai.add_knowledge((i, j), game.nearby_mines((i, j)))
+                                    ai.add_knowledge(
+                                        (i, j), game.nearby_mines((i, j)))
                 # Right mouse button
                 elif event.button == 3:
                     # Check if the user is clicking a cell

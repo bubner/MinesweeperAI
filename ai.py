@@ -128,7 +128,6 @@ class AI:
         cells = self.safes.difference(self.moves)
         # Return the first cell in the set, or null if there are no safe cells
         return cells.pop() if len(cells) > 0 else None
-        
 
     def make_random_move(self):
         """
