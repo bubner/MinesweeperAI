@@ -4,6 +4,7 @@ import pygame
 
 from sys import exit
 from game import Minesweeper
+from ai import AI
 
 
 def main():
@@ -27,6 +28,7 @@ def main():
     # e.g. 16x16 board = 256 cells, 256 // 6 = 42 mines
     game = Minesweeper(BOARD_WIDTH, BOARD_HEIGHT,
                        BOARD_WIDTH * BOARD_HEIGHT // 6)
+    ai = AI(BOARD_HEIGHT, BOARD_WIDTH)
 
     # Font configuration
     OPEN_SANS = "assets/fonts/OpenSans-Regular.ttf"
@@ -159,6 +161,15 @@ def main():
                     # Check if the user is clicking the reset button
                     if resetButton.collidepoint(mouse_position):
                         game.reset()
+                    elif bestMoveButton.collidepoint(mouse_position):
+                        # Make an AI move if we press Best Move button
+                        move = ai.make_safe_move()
+                        if not move:
+                            move = ai.make_random_move()
+                            if move:
+                                print("AI has played a random move.")
+                            else:
+                                print("No moves are left.")
                     else:
                         # Otherwise, check if the user is clicking a cell
                         for i in range(BOARD_WIDTH):
@@ -166,6 +177,8 @@ def main():
                                 # Make a move if the user is clicking a cell
                                 if cells[i][j].collidepoint(mouse_position):
                                     game.make_move((i, j))
+                                    # Update AI knowledge base
+                                    ai.add_knowledge((i, j), game.nearby_mines((i, j)))
                 # Right mouse button
                 elif event.button == 3:
                     # Check if the user is clicking a cell

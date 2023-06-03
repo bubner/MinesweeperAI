@@ -1,4 +1,6 @@
 # Lucas Bubner, 2023
+from random import shuffle
+
 
 class Statement:
     """
@@ -6,7 +8,7 @@ class Statement:
     Statements are used to represent boolean expressions about knowledge in a game,
     and contain information about a gamestate based on statement parameters.
     """
-    
+
     def __init__(self, cells, count):
         # Every statement holds a copy of the game state,
         # for internal knowledge representation
@@ -30,33 +32,42 @@ class Statement:
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        raise NotImplementedError
+        # If the number of cells are bomb counts are the same, then these cells are bombs
+        return self.cells if self.count == len(self.cells) else None
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        raise NotImplementedError
+        # If there are no bombs in the set, then all the cells are safe
+        return self.cells if self.count == 0 else None
 
     def mark_mine(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        raise NotImplementedError
+        # Mark a cell as a mine by decrementing the bomb count and removing the cell from the cells set
+        if cell in self.cells:
+            self.count -= 1
+            self.cells.remove(cell)
 
     def mark_safe(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
-        raise NotImplementedError
+        # Mark a cell as a safe cell by removing the cell from the cells set
+        # However, do not change the bomb counter as we know it is safe
+        if cell in self.cells:
+            self.cells.remove(cell)
 
 
 class AI:
     """
     AI implementation to play best moves for Minesweeper based on a knowledge base
     """
+
     def __init__(self, height, width):
         # Set height and width of the board
         self.height = height
@@ -69,7 +80,7 @@ class AI:
         self.knowledge = []
 
         # Interally store squares clicked, discovered to be safe, or marked as a mine
-        # by the knowledge base. Player clicked flags are not represented to be marked as mines.abs
+        # by the knowledge base. Player clicked flags are not represented to be marked as mines.
         self.moves = set()
         self.mines = set()
         self.safes = set()
@@ -113,7 +124,11 @@ class AI:
         """
         Returns a safe cell to choose on the Minesweeper board, based on the knowledge base.
         """
-        raise NotImplementedError
+        # Find a cell in safes that hasn't been picked before
+        cells = self.safes.difference(self.moves)
+        # Return the first cell in the set, or null if there are no safe cells
+        return cells.pop() if len(cells) > 0 else None
+        
 
     def make_random_move(self):
         """
@@ -122,4 +137,16 @@ class AI:
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        raise NotImplementedError
+        # Keep track of cells that we can pick from
+        pickable_cells = []
+
+        # Loop over the board and add cells that are not mines and have not been picked
+        for i in range(self.height):
+            for j in range(self.width):
+                cell = (i, j)
+                if cell not in self.moves and cell not in self.mines:
+                    pickable_cells.append(cell)
+
+        # Return a random cell from the pickable cells, or null if there are no pickable cells
+        shuffle(pickable_cells)
+        return pickable_cells[0] if len(pickable_cells) > 0 else None

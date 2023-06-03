@@ -16,6 +16,7 @@ class Minesweeper:
     """
     Minesweeper implementation
     """
+
     def __init__(self, width, height, mines):
         # Store width, height, and mine count of the board
         self.width = width
@@ -64,7 +65,7 @@ class Minesweeper:
         # Do not click on a flagged square or if the game is won or lost
         if square in self.flags or self.gamestate != Gamestates.PLAYING:
             return
-        
+
         # Add the square to the revealed array
         self.revealed.add(square)
 
@@ -74,12 +75,10 @@ class Minesweeper:
             for neighbour in self.get_neighbours(square):
                 if neighbour not in self.mines:
                     self.revealed.add(neighbour)
-                
-                
+
         # Check if the revealed square is in the mines locations, if so, then the game is lost
         if square in self.mines:
             self.gamestate = Gamestates.LOST
-        
 
     def change_flag(self, square):
         """
@@ -105,7 +104,7 @@ class Minesweeper:
         Determine if the game is lost if the gamestate is set to LOST
         """
         return self.gamestate == Gamestates.LOST
-    
+
     def is_won(self):
         """
         Determine if the game is won if the gamestate is set to WON
