@@ -22,6 +22,7 @@ def main():
     display_info = pygame.display.Info()
     size = width, height = display_info.current_w, display_info.current_h
     screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+    pygame.display.set_caption("MinesweeperAI")
 
     # Import and initialise new object for the minesweeper game
     # Set mine count to floor(width * height / 6) to get a decent difficulty
@@ -29,6 +30,8 @@ def main():
     game = Minesweeper(BOARD_WIDTH, BOARD_HEIGHT,
                        BOARD_WIDTH * BOARD_HEIGHT // 6)
     ai = AI(BOARD_HEIGHT, BOARD_WIDTH)
+    aistatus = "AI ready."
+    autoPlay = False
 
     # Font configuration
     OPEN_SANS = "assets/fonts/OpenSans-Regular.ttf"
@@ -52,6 +55,35 @@ def main():
     flag = pygame.transform.scale(flag, (cell_size, cell_size))
     mine = pygame.image.load("assets/images/mine.png")
     mine = pygame.transform.scale(mine, (cell_size, cell_size))
+
+    def make_ai_move():
+        """
+            Use AI to make a move, if no safe moves are available,
+            make a random move that is known to not be a confirmed bomb.
+        """
+        # Access the aistatus variable which is declared in the scope of the main function
+        nonlocal aistatus
+        # Make a safe move if we can
+        move = ai.make_safe_move()
+        if not move:
+            # Otherwise, make a random move. However, this move will try to avoid mines.
+            move = ai.make_random_move()
+            if move:
+                aistatus = "AI has played a random move."
+            else:
+                aistatus = "No moves are left."
+        else:
+            aistatus = "AI has played move: " + str(move)
+        print(aistatus)
+        # Mutate the game state to reflect the AI's move
+        game.make_move(move)
+        # Update AI knowledge base
+        ai.add_knowledge(move, game.nearby_mines(
+            move), game.get_neighbours(move))
+        # Update mines to represent the AI's knowledge
+        for mine_location in ai.mines:
+            game.change_flag(mine_location) if not game.is_flagged(
+                mine_location) else None
 
     while True:
         # Update screen object on resize
@@ -127,6 +159,18 @@ def main():
         pygame.draw.rect(screen, GREY, bestMoveButton)
         screen.blit(buttonText, buttonRect)
 
+        # Auto play button
+        autoMoveButton = pygame.Rect(
+            (2 / 3) * width + BOARD_PADDING, (1 / 2) * height - 140,
+            (width / 3) - BOARD_PADDING * 2, 50
+        )
+        buttonText = font.render(
+            "Start Auto Play" if not autoPlay else "Stop Auto Play", True, WHITE)
+        buttonRect = buttonText.get_rect()
+        buttonRect.center = autoMoveButton.center
+        pygame.draw.rect(screen, GREY, autoMoveButton)
+        screen.blit(buttonText, buttonRect)
+
         # Render text to the screen if the game is won or lost
         text = "You lose!" if game.is_lost() else "You win!" if game.is_won() else ""
         text = heading.render(text, True, WHITE)
@@ -136,7 +180,8 @@ def main():
         screen.blit(text, textRect)
 
         # Render number of flags that should be placed
-        text = "Flags: {}".format(game.minecount - len(game.flags))
+        text = "Flags: {}        {}".format(
+            game.minecount - len(game.flags), aistatus)
         text = font.render(text, True, WHITE)
         textRect = text.get_rect()
         textRect.center = (int((5 / 6) * width), int((2 / 3) * height))
@@ -161,17 +206,18 @@ def main():
                     # Check if the user is clicking the reset button
                     if resetButton.collidepoint(mouse_position):
                         game.reset()
-                    elif bestMoveButton.collidepoint(mouse_position):
+                        ai.reset()
+                        aistatus = "AI ready."
+                    elif bestMoveButton.collidepoint(mouse_position) and not game.is_lost():
                         # Make an AI move if we press Best Move button
-                        move = ai.make_safe_move()
-                        if not move:
-                            move = ai.make_random_move()
-                            if move:
-                                print("AI has played a random move.")
-                            else:
-                                print("No moves are left.")
-                        game.make_move(move)
-                        ai.add_knowledge(move, game.nearby_mines(move))
+                        make_ai_move()
+                    elif autoMoveButton.collidepoint(mouse_position):
+                        # Reset the game if it is in an end condition
+                        if game.is_lost() or game.is_won():
+                            game.reset()
+                            ai.reset()
+                        # Toggle auto play if we press Auto Play button
+                        autoPlay = not autoPlay
                     else:
                         # Otherwise, check if the user is clicking a cell
                         for i in range(BOARD_WIDTH):
@@ -180,8 +226,9 @@ def main():
                                 if cells[i][j].collidepoint(mouse_position):
                                     game.make_move((i, j))
                                     # Update AI knowledge base
-                                    ai.add_knowledge(
-                                        (i, j), game.nearby_mines((i, j)))
+                                    if not game.is_lost():
+                                        ai.add_knowledge((i, j), game.nearby_mines(
+                                            (i, j)), game.get_neighbours((i, j)))
                 # Right mouse button
                 elif event.button == 3:
                     # Check if the user is clicking a cell
@@ -190,6 +237,15 @@ def main():
                             # Change the flag if the user is clicking a cell
                             if cells[i][j].collidepoint(mouse_position):
                                 game.change_flag((i, j))
+
+        # Play automatically if autoPlay is toggled
+        if autoPlay:
+            if game.is_won():
+                game.reset()
+                ai.reset()
+            elif game.is_lost():
+                autoPlay = False
+            make_ai_move()
 
         pygame.display.update()
 

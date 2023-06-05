@@ -69,13 +69,6 @@ class Minesweeper:
         # Add the square to the revealed array
         self.revealed.add(square)
 
-        # If it is the first move, reveal a starting radius of squares around the square
-        if len(self.revealed) == 1:
-            # Explore neighbours that are not mines
-            for neighbour in self.get_neighbours(square):
-                if neighbour not in self.mines:
-                    self.revealed.add(neighbour)
-
         # Check if the revealed square is in the mines locations, if so, then the game is lost
         if square in self.mines:
             self.gamestate = Gamestates.LOST
@@ -146,12 +139,17 @@ class Minesweeper:
         """
         Get the squares that are adjacent to a square
         """
+        if square is None:
+            return []
         # Get all neighbours of a square by iterating over a 3x3 grid
         neighbours = []
         for i in range(-1, 2):
             for j in range(-1, 2):
                 # Do not count the target square itself
                 if i == 0 and j == 0:
+                    continue
+                # Do not count squares that are out of bounds
+                if square[0] + i < 0 or square[0] + i >= self.height or square[1] + j < 0 or square[1] + j >= self.width:
                     continue
                 # Append the neighbour to the neighbours array
                 neighbours.append((square[0] + i, square[1] + j))
