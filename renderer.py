@@ -170,6 +170,8 @@ def main():
                                 print("AI has played a random move.")
                             else:
                                 print("No moves are left.")
+                        game.make_move(move)
+                        ai.add_knowledge(move, game.nearby_mines(move))
                     else:
                         # Otherwise, check if the user is clicking a cell
                         for i in range(BOARD_WIDTH):
