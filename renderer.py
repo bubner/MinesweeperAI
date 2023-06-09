@@ -240,10 +240,10 @@ def main():
 
         # Play automatically if autoPlay is toggled
         if autoPlay:
-            if game.is_won():
+            if game.is_lost():
                 game.reset()
                 ai.reset()
-            elif game.is_lost():
+            elif game.is_won():
                 autoPlay = False
             make_ai_move()
 
